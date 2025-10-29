@@ -1,0 +1,59 @@
+version: "3.9"
+
+volumes:
+  rabbitmq_data:
+
+networks:
+  rabbitmq_study:
+
+services:
+  rabbitmq_service:
+    image: rabbitmq:4.2.0-management
+    container_name: rabbitmq_service
+    environment:
+      RABBITMQ_DEFAULT_USER: canonflow
+      RABBITMQ_DEFAULT_PASS: canonflow
+    networks:
+      - rabbitmq_study
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+  go_service:
+    container_name: go_service
+    build:
+      context: .
+      dockerfile: dockerfile/golang.dockerfile
+    restart: always
+    environment:
+      - GIN_MODE=release
+    networks:
+      - rabbitmq_study
+    ports:
+      - "8090:8990"
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      rabbitmq_service:
+        condition: service_healthy
+  flask_service:
+    build:
+      context: .
+      dockerfile: dockerfile/flask.dockerfile
+    container_name: flask_service
+    ports:
+      - "3000:3000"
+    networks:
+      - rabbitmq_study
+    depends_on:
+      rabbitmq_service:
+        condition: service_healthy
+    restart: unless-stopped
