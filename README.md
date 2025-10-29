@@ -3,7 +3,7 @@
 This project demonstrates an Event-Driven Architecture (EDA) using RabbitMQ as a Message Broker.
 Two microservices — one built with Go and the other with Flask (Python) — communicate asynchronously by producing and consuming messages through RabbitMQ.
 
-Both services act as Producer and Consumer simultaneously, showcasing bi-directional event communication.
+Both services act as Publisher and Consumer simultaneously, showcasing bi-directional event communication.
 
 ## 🧠 Overview
 
